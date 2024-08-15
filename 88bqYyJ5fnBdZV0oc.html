@@ -1,0 +1,573 @@
+<html><head><base href="https://example.com">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eTickets - Achetez vos billets en ligne</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            padding-bottom: 60px;
+        }
+        .container {
+            max-width: 390px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #c8a2c8;
+            text-transform: uppercase;
+        }
+        .event-card {
+            background-color: #222;
+            border: 2px solid #fff;
+            margin-bottom: 20px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .event-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .event-details {
+            padding: 15px;
+        }
+        .event-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .event-info {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .buy-button {
+            background-color: #c8a2c8;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+        }
+        .category-tabs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .category-tab {
+            background-color: #333;
+            color: #fff;
+            border: 2px solid #fff;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .category-tab.active {
+            background-color: #c8a2c8;
+            color: #000;
+        }
+        .barcode {
+            width: 100%;
+            height: 50px;
+            background: repeating-linear-gradient(
+                to right,
+                #000,
+                #000 10px,
+                #fff 10px,
+                #fff 20px
+            );
+            margin-top: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #222;
+            margin: 15% auto;
+            padding: 20px;
+            border: 2px solid #fff;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .ticket {
+            background-color: #c8a2c8;
+            color: #000;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #000;
+        }
+        .ticket-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .ticket-info {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .ticket-barcode {
+            width: 100%;
+            height: 50px;
+            background: #000;
+            margin-top: 10px;
+        }
+        .material-icons {
+            font-size: 24px;
+            margin-right: 5px;
+        }
+        .floating-tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 390px;
+            background-color: #222;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 2px solid #fff;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .ticket-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .ticket-action-button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+        }
+        .verification-code {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+        .modal-image {
+            width: 100%;
+            height: auto;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .modal-description {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .modal-details {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .modal-detail {
+            flex-basis: 48%;
+            margin-bottom: 10px;
+        }
+        .modal-detail-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .modal-detail-value {
+            color: #c8a2c8;
+        }
+        .modal-buy-button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            text-transform: uppercase;
+            background-color: #c8a2c8;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">etickets</div>
+        </div>
+        
+        <div id="home" class="content-section active">
+            <div class="category-tabs">
+                <button class="category-tab active" data-category="concert">CONCERT</button>
+                <button class="category-tab" data-category="sport">SPORT</button>
+                <button class="category-tab" data-category="standup">STAND UP</button>
+                <button class="category-tab" data-category="best">BEST</button>
+            </div>
+
+            <div id="events-container">
+                <!-- Events will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <div id="search" class="content-section">
+            <h2>Search Events</h2>
+            <input type="text" id="search-input" placeholder="Search for events...">
+            <div id="search-results"></div>
+        </div>
+
+        <div id="tickets" class="content-section">
+            <h2>My Tickets</h2>
+            <div id="user-tickets"></div>
+        </div>
+
+        <div id="profile" class="content-section">
+            <h2>User Profile</h2>
+            <div id="user-info"></div>
+        </div>
+    </div>
+
+    <div id="ticketModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="Event Image" class="modal-image">
+            <div class="ticket-title" id="ticketTitle"></div>
+            <p class="modal-description" id="eventDescription"></p>
+            <div class="modal-details">
+                <div class="modal-detail">
+                    <div class="modal-detail-label">Location</div>
+                    <div class="modal-detail-value" id="ticketLocation"></div>
+                </div>
+                <div class="modal-detail">
+                    <div class="modal-detail-label">Date</div>
+                    <div class="modal-detail-value" id="ticketDate"></div>
+                </div>
+                <div class="modal-detail">
+                    <div class="modal-detail-label">Time</div>
+                    <div class="modal-detail-value" id="eventTime"></div>
+                </div>
+                <div class="modal-detail">
+                    <div class="modal-detail-label">Price</div>
+                    <div class="modal-detail-value" id="ticketPrice"></div>
+                </div>
+            </div>
+            <button class="modal-buy-button">Buy Now</button>
+        </div>
+    </div>
+
+    <div class="floating-tab-bar">
+        <a href="#home" class="tab-item" data-section="home">
+            <i class="material-icons tab-icon">home</i>
+            Home
+        </a>
+        <a href="#search" class="tab-item" data-section="search">
+            <i class="material-icons tab-icon">search</i>
+            Search
+        </a>
+        <a href="#tickets" class="tab-item" data-section="tickets">
+            <i class="material-icons tab-icon">local_activity</i>
+            Tickets
+        </a>
+        <a href="#profile" class="tab-item" data-section="profile">
+            <i class="material-icons tab-icon">person</i>
+            Profile
+        </a>
+    </div>
+
+    <script>
+        // Mock data for events
+        const events = {
+            concert: [
+                {
+                    title: "BIG DAWGS HANUMANKIND",
+                    location: "New York",
+                    date: "13th September 2025",
+                    time: "20:00",
+                    image: "https://example.com/images/hanumankind.jpg",
+                    price: "$65.00",
+                    description: "Experience the electrifying performance of BIG DAWGS HANUMANKIND, blending raw energy with poetic lyricism. This concert promises an unforgettable night of hip-hop and cultural fusion."
+                },
+                {
+                    title: "ROCK FEST 2025",
+                    location: "Los Angeles",
+                    date: "20th July 2025",
+                    time: "18:00",
+                    image: "https://example.com/images/rockfest.jpg",
+                    price: "$85.00",
+                    description: "ROCK FEST 2025 brings together the biggest names in rock for an epic day of music. From classic rock legends to emerging talents, this festival has it all."
+                }
+            ],
+            sport: [
+                {
+                    title: "NBA: Lakers vs Houston Astros",
+                    location: "Cologne, Germany",
+                    date: "27 October 2025",
+                    time: "19:30",
+                    image: "https://example.com/images/nba.jpg",
+                    price: "$48.00",
+                    description: "Witness basketball history as the Lakers face off against the Houston Astros in this exciting NBA matchup. Don't miss the chance to see your favorite players in action!"
+                },
+                {
+                    title: "UEFA Champions League Final",
+                    location: "London, UK",
+                    date: "30 May 2025",
+                    time: "20:45",
+                    image: "https://example.com/images/champions.jpg",
+                    price: "$150.00",
+                    description: "The pinnacle of European club football comes to London. Be there to experience the drama, skill, and passion of the UEFA Champions League Final."
+                }
+            ],
+            standup: [
+                {
+                    title: "Comedy Night with John Doe",
+                    location: "Chicago",
+                    date: "5th August 2025",
+                    time: "21:00",
+                    image: "https://example.com/images/comedy.jpg",
+                    price: "$30.00",
+                    description: "Get ready for a night of non-stop laughter with John Doe, one of the hottest names in stand-up comedy. His unique perspective and quick wit will keep you in stitches all night long."
+                }
+            ],
+            best: [
+                {
+                    title: "World Music Festival",
+                    location: "Paris, France",
+                    date: "15th June 2025",
+                    time: "14:00",
+                    image: "https://example.com/images/music.jpg",
+                    price: "$100.00",
+                    description: "Immerse yourself in a global soundscape at the World Music Festival. This celebration of cultural diversity brings together artists from every corner of the planet for an unforgettable musical journey."
+                }
+            ]
+        };
+
+        // Function to create event card HTML
+        function createEventCard(event) {
+            return `
+                <div class="event-card" onclick="openModal('${event.title}', '${event.location}', '${event.date}', '${event.price}', '${event.image}', '${event.description}', '${event.time}')">
+                    <img src="${event.image}" alt="${event.title}" class="event-image">
+                    <div class="event-details">
+                        <div class="event-info">${event.location} | ${event.date}</div>
+                        <div class="event-title">${event.title}</div>
+                        <button class="buy-button"><i class="material-icons">local_activity</i>BUY NOW</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Function to load events for a category
+        function loadEvents(category) {
+            const eventsContainer = document.getElementById('events-container');
+            eventsContainer.innerHTML = '';
+            events[category].forEach(event => {
+                eventsContainer.innerHTML += createEventCard(event);
+            });
+        }
+
+        // Initialize with concert events
+        loadEvents('concert');
+
+        // Category tabs functionality
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                loadEvents(this.dataset.category);
+            });
+        });
+
+        // Modal functionality
+        var modal = document.getElementById("ticketModal");
+        var span = document.getElementsByClassName("close")[0];
+
+        function openModal(title, location, date, price, image, description, time) {
+            document.getElementById("modalImage").src = image;
+            document.getElementById("ticketTitle").innerText = title;
+            document.getElementById("ticketLocation").innerText = location;
+            document.getElementById("ticketDate").innerText = date;
+            document.getElementById("ticketPrice").innerText = price;
+            document.getElementById("eventDescription").innerText = description;
+            document.getElementById("eventTime").innerText = time;
+            modal.style.display = "block";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Tab bar navigation
+        document.querySelectorAll('.tab-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sectionId = this.dataset.section;
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // Search functionality
+        document.getElementById('search-input').addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            const results = Object.values(events).flat().filter(event => 
+                event.title.toLowerCase().includes(query) || 
+                event.location.toLowerCase().includes(query)
+            );
+            
+            const searchResults = document.getElementById('search-results');
+            searchResults.innerHTML = '';
+            results.forEach(event => {
+                searchResults.innerHTML += createEventCard(event);
+            });
+        });
+
+        // Mock user tickets data
+        const userTickets = [
+            {
+                title: "ROCK FEST 2025",
+                location: "Los Angeles",
+                date: "20th July 2025",
+                price: "$85.00",
+                verificationCode: "RF2025-XYZ789"
+            }
+        ];
+
+        // Function to generate PDF ticket
+        function generatePDF(ticket) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(22);
+            doc.text(ticket.title, 20, 20);
+            
+            doc.setFontSize(14);
+            doc.text(`Location: ${ticket.location}`, 20, 40);
+            doc.text(`Date: ${ticket.date}`, 20, 50);
+            doc.text(`Price: ${ticket.price}`, 20, 60);
+            doc.text(`Verification Code: ${ticket.verificationCode}`, 20, 70);
+            
+            // Add a simple barcode (for illustration)
+            doc.setFillColor(0, 0, 0);
+            for (let i = 0; i < 30; i++) {
+                if (Math.random() > 0.5) {
+                    doc.rect(20 + (i * 5), 80, 3, 20, 'F');
+                }
+            }
+            
+            doc.save(`ticket_${ticket.title.replace(/\s+/g, '_').toLowerCase()}.pdf`);
+        }
+
+        // Load user tickets
+        function loadUserTickets() {
+            const ticketsContainer = document.getElementById('user-tickets');
+            ticketsContainer.innerHTML = '';
+            userTickets.forEach(ticket => {
+                ticketsContainer.innerHTML += `
+                    <div class="ticket">
+                        <div class="ticket-title">${ticket.title}</div>
+                        <div class="ticket-info">Location: ${ticket.location}</div>
+                        <div class="ticket-info">Date: ${ticket.date}</div>
+                        <div class="ticket-info">Price: ${ticket.price}</div>
+                        <div class="verification-code">Code: ${ticket.verificationCode}</div>
+                        <div class="ticket-barcode"></div>
+                        <div class="ticket-actions">
+                            <button class="ticket-action-button" onclick="generatePDF(${JSON.stringify(ticket)})">
+                                <i class="material-icons">file_download</i> Download PDF
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Mock user profile data
+        const userProfile = {
+            name: "John Doe",
+            email: "john.doe@example.com",
+            memberSince: "January 2023"
+        };
+
+        // Load user profile
+        function loadUserProfile() {
+            const userInfo = document.getElementById('user-info');
+            userInfo.innerHTML = `
+                <p><strong>Name:</strong> ${userProfile.name}</p>
+                <p><strong>Email:</strong> ${userProfile.email}</p>
+                <p><strong>Member Since:</strong> ${userProfile.memberSince}</p>
+            `;
+        }
+
+        // Initial load of user tickets and profile
+        loadUserTickets();
+        loadUserProfile();
+    </script>
+</body>
+</html>
