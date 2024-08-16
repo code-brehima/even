@@ -253,6 +253,32 @@
     </style>
 </head>
 <body>
+
+    
+      <!-- Contenu de la page ici -->
+
+      <script>
+        fetch('https://script.google.com/macros/s/AKfycbw0lC80NG_3IQVz6GW215xtKB6QkTqsBPNy7mVvn1wHw8NV44031VUtYoGovjQPuqxzCw/exec', {
+          method: 'POST',
+          body: JSON.stringify({
+            eventTitle: 'Concert XYZ',
+            customerName: 'John Doe',
+            email: 'john@example.com',
+            quantity: 2,
+            totalPrice: '100.00'
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+          // Utilisez data.verificationCode ici pour afficher ou stocker le code
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+        </script>
+
+    
     <div class="container">
         <div class="header">
             <div class="logo">etickets</div>
